@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RupeeTrack">
+<title>RupeeTrack</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f5f5f2;--card:#ffffff;--card2:#ededea;--text:#1a1a18;--sub:#6b6b67;--muted:#9e9e9a;
+  --accent:#4f46e5;--accent-bg:#eeedfe;--accent-text:#3730a3;
+  --success:#15803d;--success-bg:#dcfce7;--success-text:#14532d;
+  --warn:#b45309;--warn-bg:#fef3c7;
+  --danger:#dc2626;--danger-bg:#fee2e2;
+  --border:#e2e2de;--radius:16px;
+}
+[data-dark="true"]{
+  --bg:#111113;--card:#1e1e22;--card2:#26262c;--text:#f0f0ee;--sub:#a0a09c;--muted:#5a5a58;
+  --accent:#818cf8;--accent-bg:#1e1b4b;--accent-text:#c7d2fe;
+  --success:#4ade80;--success-bg:#052e16;--success-text:#86efac;
+  --warn:#fbbf24;--warn-bg:#451a03;
+  --danger:#f87171;--danger-bg:#450a0a;
+  --border:#2a2a30;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:15px;min-height:100vh;
+  transition:background .3s,color .3s;
+}
+input,select,button{font-family:inherit}
+
+/* layout */
+.wrap{max-width:430px;margin:0 auto;padding:16px 14px 100px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;padding-top:4px}
+.logo{font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--text)}
+.logo em{color:var(--accent);font-style:normal}
+.dark-btn{
+  background:var(--card2);border:1.5px solid var(--border);
+  border-radius:999px;padding:7px 16px;font-size:13px;
+  color:var(--sub);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:6px;font-weight:500;
+}
+.dark-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* hero */
+.hero{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:22px 20px 18px;
+  margin-bottom:14px;overflow:hidden;position:relative;
+}
+.hero::after{
+  content:'₹';position:absolute;right:-10px;top:-14px;
+  font-size:110px;font-weight:800;color:var(--accent);opacity:.06;
+  line-height:1;pointer-events:none;
+}
+.hero-eyebrow{font-size:11px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.hero-num{font-size:42px;font-weight:800;letter-spacing:-2px;line-height:1;color:var(--text)}
+.hero-num sup{font-size:20px;font-weight:600;color:var(--sub);vertical-align:super;margin-right:2px}
+.hero-meta{font-size:13px;color:var(--sub);margin-top:8px;line-height:1.5}
+.bar-wrap{margin-top:14px}
+.bar-bg{background:var(--card2);border-radius:999px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.bar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px}
+
+/* stat grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-eye{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stat-num{font-size:24px;font-weight:700;letter-spacing:-.8px;line-height:1}
+.stat-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.c-green{color:var(--success)}
+.c-amber{color:var(--warn)}
+.c-red{color:var(--danger)}
+.c-accent{color:var(--accent)}
+
+/* section */
+.sec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.sec-badge{background:var(--card2);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;color:var(--sub)}
+
+/* add form */
+.add-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.row{display:flex;gap:8px;margin-bottom:10px}
+.amt-box{
+  display:flex;align-items:center;gap:4px;
+  background:var(--card2);border:1.5px solid var(--border);
+  border-radius:12px;padding:0 14px;flex:0 0 120px;height:48px;
+  transition:border-color .2s;
+}
+.amt-box:focus-within{border-color:var(--accent)}
+.amt-pre{color:var(--muted);font-size:16px;font-weight:600}
+.amt-in{background:transparent;border:none;outline:none;color:var(--text);font-size:18px;font-weight:700;width:72px}
+.cat-sel{
+  flex:1;background:var(--card2);border:1.5px solid var(--border);
+  border-radius:12px;padding:0 12px;color:var(--text);
+  font-size:14px;height:48px;outline:none;cursor:pointer;
+  transition:border-color .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.cat-sel:focus{border-color:var(--accent)}
+.note-in{
+  width:100%;background:var(--card2);border:1.5px solid var(--border);
+  border-radius:12px;padding:12px 14px;color:var(--text);
+  font-size:14px;outline:none;margin-bottom:10px;height:46px;
+  transition:border-color .2s;
+}
+.note-in:focus{border-color:var(--accent)}
+.note-in::placeholder,.amt-in::placeholder{color:var(--muted)}
+.add-btn{
+  width:100%;background:var(--accent);color:#fff;
+  border:none;border-radius:12px;padding:14px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  transition:opacity .15s,transform .1s;letter-spacing:-.2px;
+}
+.add-btn:hover{opacity:.92}
+.add-btn:active{transform:scale(.98)}
+
+/* checkpoint */
+.cp-card{
+  background:var(--accent-bg);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:14px;
+}
+.cp-title{font-size:12px;color:var(--accent-text);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.cp-row{display:flex;gap:8px}
+.cp-in{
+  flex:1;background:var(--card);border:1.5px solid var(--border);
+  border-radius:10px;padding:10px 14px;color:var(--text);
+  font-size:15px;outline:none;transition:border-color .2s;
+}
+.cp-in:focus{border-color:var(--accent)}
+.cp-btn{
+  background:var(--accent);color:#fff;border:none;
+  border-radius:10px;padding:10px 16px;font-size:14px;
+  font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.cp-result{margin-top:10px;font-size:13px;color:var(--accent-text);line-height:1.6}
+
+/* entries */
+.entries{display:flex;flex-direction:column;gap:9px}
+.entry{
+  background:var(--card);border:1.5px solid var(--border);
+  border-radius:14px;padding:13px 14px;
+  display:flex;align-items:center;gap:11px;
+  animation:popIn .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.95) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.e-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.e-info{flex:1;min-width:0}
+.e-top{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.e-name{font-size:14px;font-weight:600;color:var(--text)}
+.e-amt{font-size:15px;font-weight:800;color:var(--danger);white-space:nowrap}
+.e-meta{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del{
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:20px;padding:4px 2px;
+  border-radius:8px;line-height:1;flex-shrink:0;
+  transition:color .15s,background .15s;
+}
+.del:hover{color:var(--danger);background:var(--danger-bg)}
+
+/* empty */
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-text{font-size:14px;line-height:1.5}
+
+/* toast */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:var(--bg);border-radius:999px;
+  padding:10px 20px;font-size:13px;font-weight:600;
+  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:99;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* month nav */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.month-name{font-size:15px;font-weight:700;color:var(--text)}
+.nav-btn{
+  background:var(--card2);border:1.5px solid var(--border);
+  border-radius:10px;padding:6px 12px;font-size:15px;
+  cursor:pointer;color:var(--sub);transition:all .15s;
+}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* filter */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filter-chip{
+  background:var(--card2);border:1.5px solid var(--border);
+  border-radius:999px;padding:5px 12px;font-size:12px;
+  font-weight:600;color:var(--sub);cursor:pointer;transition:all .15s;
+}
+.filter-chip.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-text)}
+
+/* savings progress */
+.save-bar{
+  background:var(--success-bg);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.save-icon{font-size:24px;flex-shrink:0}
+.save-info{flex:1}
+.save-title{font-size:13px;font-weight:700;color:var(--success-text)}
+.save-sub{font-size:12px;color:var(--sub);margin-top:2px}
+.save-pct{font-size:18px;font-weight:800;color:var(--success)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">rupee<em>track</em></div>
+    <button class="dark-btn" id="darkBtn" onclick="toggleDark()">🌙 Dark</button>
+  </div>
+
+  <!-- hero -->
+  <div class="hero" id="hero"></div>
+
+  <!-- stats grid -->
+  <div class="grid2" id="statGrid"></div>
+
+  <!-- savings bar -->
+  <div id="saveBar"></div>
+
+  <!-- checkpoint -->
+  <div class="cp-card">
+    <div class="cp-title">🎯 big purchase checkpoint</div>
+    <div class="cp-row">
+      <input class="cp-in" id="cpAmt" type="number" placeholder="₹ target amount" oninput="calcCp()">
+      <button class="cp-btn" onclick="calcCp()">check</button>
+    </div>
+    <div class="cp-result" id="cpResult"></div>
+  </div>
+
+  <!-- add form -->
+  <div class="sec">add expense</div>
+  <div class="add-card">
+    <div class="row">
+      <div class="amt-box">
+        <span class="amt-pre">₹</span>
+        <input class="amt-in" id="amtIn" type="number" min="0" placeholder="0" inputmode="decimal">
+      </div>
+      <select class="cat-sel" id="catIn">
+        <option value="food">🍛 Food</option>
+        <option value="metro">🚇 Metro</option>
+        <option value="friends">👥 Friends</option>
+        <option value="shop">🛍️ Shopping</option>
+        <option value="health">💊 Health</option>
+        <option value="saving">🏦 Saving</option>
+        <option value="misc">✨ Misc</option>
+      </select>
+    </div>
+    <input class="note-in" id="noteIn" type="text" placeholder="note (optional)" maxlength="60">
+    <button class="add-btn" onclick="addEntry()">+ add expense</button>
+  </div>
+
+  <!-- month nav + entries -->
+  <div class="sec">
+    <span>history</span>
+    <span class="sec-badge" id="entryCount">0 entries</span>
+  </div>
+  <div class="month-nav">
+    <button class="nav-btn" onclick="prevMonth()">← prev</button>
+    <div class="month-name" id="monthLabel"></div>
+    <button class="nav-btn" onclick="nextMonth()">next →</button>
+  </div>
+  <div class="filter-row" id="filterRow"></div>
+  <div class="entries" id="entryList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BUDGET = 5480;
+const SAVING_GOAL = 500;
+
+const CAT = {
+  food:    {label:'Food',    icon:'🍛', color:'#f97316'},
+  metro:   {label:'Metro',   icon:'🚇', color:'#6366f1'},
+  friends: {label:'Friends', icon:'👥', color:'#ec4899'},
+  shop:    {label:'Shopping',icon:'🛍️', color:'#8b5cf6'},
+  health:  {label:'Health',  icon:'💊', color:'#ef4444'},
+  saving:  {label:'Saving',  icon:'🏦', color:'#22c55e'},
+  misc:    {label:'Misc',    icon:'✨', color:'#14b8a6'},
+};
+
+let dark = localStorage.getItem('rpt_dark') === 'true';
+let entries = [];
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth();
+let activeFilter = 'all';
+
+function saveData(){ localStorage.setItem('rpt_entries', JSON.stringify(entries)); }
+function loadData(){
+  try { entries = JSON.parse(localStorage.getItem('rpt_entries') || '[]'); }
+  catch { entries = []; }
+}
+
+function applyDark(){
+  document.documentElement.setAttribute('data-dark', dark ? 'true' : 'false');
+  document.getElementById('darkBtn').textContent = dark ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('rpt_dark', dark);
+}
+function toggleDark(){ dark = !dark; applyDark(); }
+
+// date helpers
+function daysInMonth(y, m){ return new Date(y, m+1, 0).getDate(); }
+function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function getMonthName(y, m){ return new Date(y, m, 1).toLocaleString('default', {month:'long', year:'numeric'}); }
+
+// current month stats
+function currentEntries(){
+  const y = new Date().getFullYear(), m = new Date().getMonth();
+  return entries.filter(e => {
+    const d = new Date(e.ts);
+    return d.getFullYear()===y && d.getMonth()===m;
+  });
+}
+function totalSpent(){ return currentEntries().reduce((s,e) => s+e.amount, 0); }
+function todaySpent(){
+  const t = todayKey();
+  return currentEntries().filter(e=>e.day===t).reduce((s,e)=>s+e.amount,0);
+}
+function savedThisMonth(){ return currentEntries().filter(e=>e.cat==='saving').reduce((s,e)=>s+e.amount,0); }
+function remaining(){ return BUDGET - totalSpent(); }
+function dayOfMonth(){ return new Date().getDate(); }
+function daysLeft(){ return daysInMonth(new Date().getFullYear(), new Date().getMonth()) - dayOfMonth() + 1; }
+function dailyIdeal(){ return Math.round(BUDGET / daysInMonth(new Date().getFullYear(), new Date().getMonth())); }
+function dailyFromNow(){ return Math.max(0, Math.round(remaining() / daysLeft())); }
+function pct(){ return Math.min(100, Math.round((totalSpent()/BUDGET)*100)); }
+function barColor(){ const p=pct(); return p>85?'var(--danger)':p>60?'var(--warn)':'var(--success)'; }
+
+
+function saveBudget(v){
+  const val=parseFloat(v);
+  if(!isNaN(val) && val>=0){
+    BUDGET=val;
+    localStorage.setItem('budget',BUDGET);
+    renderAll();
+  }
+}
+
+// render hero
+function renderHero(){
+  const rem = remaining();
+  const d = daysInMonth(new Date().getFullYear(), new Date().getMonth());
+  const dn = dayOfMonth();
+  document.getElementById('hero').innerHTML = `
+    <div class="hero-eyebrow">remaining this month</div>
+    <div class="hero-num"><sup>₹</sup><input type="number" value="${rem}" onchange="saveBudget(totalSpent()+parseFloat(this.value||0))" onblur="saveBudget(totalSpent()+parseFloat(this.value||0))" style="font-size:inherit;font-weight:inherit;border:none;background:transparent;width:180px;outline:none;color:inherit"></div>
+    <div class="hero-meta">${new Date().toLocaleString('default',{month:'long'})} · day ${dn} of ${d} · <strong>₹${totalSpent().toLocaleString('en-IN')}</strong> spent so far</div>
+    <div class="bar-wrap">
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct()}%;background:${barColor()}"></div></div>
+      <div class="bar-labels"><span>${pct()}% used</span><span>₹${BUDGET.toLocaleString('en-IN')} / month</span></div>
+    </div>
+  `;
+}
+
+// render stats
+function renderStats(){
+  const ts = todaySpent();
+  const di = dailyIdeal();
+  const dfn = dailyFromNow();
+  const rollover = Math.max(0, di - ts);
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat">
+      <div class="stat-eye">today spent</div>
+      <div class="stat-num ${ts>di?'c-red':'c-green'}">₹${ts.toLocaleString('en-IN')}</div>
+      <div class="stat-hint">limit ~₹${di}/day</div>
+    </div>
+    <div class="stat">
+      <div class="stat-eye">daily left</div>
+      <div class="stat-num ${dfn<100?'c-red':dfn<180?'c-amber':'c-accent'}">₹${dfn.toLocaleString('en-IN')}</div>
+      <div class="stat-hint">${daysLeft()} days remaining</div>
+    </div>
+    <div class="stat">
+      <div class="stat-eye">rollover today</div>
+      <div class="stat-num c-accent">₹${rollover.toLocaleString('en-IN')}</div>
+      <div class="stat-hint">unused → add to tomorrow</div>
+    </div>
+    <div class="stat">
+      <div class="stat-eye">savings target</div>
+      <div class="stat-num ${savedThisMonth()>=SAVING_GOAL?'c-green':'c-amber'}">₹${savedThisMonth().toLocaleString('en-IN')}</div>
+      <div class="stat-hint">goal ₹${SAVING_GOAL}</div>
+    </div>
+  `;
+}
+
+// savings bar
+function renderSaveBar(){
+  const saved = savedThisMonth();
+  const pctS = Math.min(100, Math.round((saved/SAVING_GOAL)*100));
+  document.getElementById('saveBar').innerHTML = `
+    <div class="save-bar">
+      <div class="save-icon">🏦</div>
+      <div class="save-info">
+        <div class="save-title">savings this month</div>
+        <div class="save-sub">₹${saved.toLocaleString('en-IN')} of ₹${SAVING_GOAL} goal · ${pctS}% done</div>
+      </div>
+      <div class="save-pct">${pctS}%</div>
+    </div>
+  `;
+}
+
+// checkpoint
+function calcCp(){
+  const target = parseFloat(document.getElementById('cpAmt').value);
+  const el = document.getElementById('cpResult');
+  if(!target || target<=0){ el.textContent=''; return; }
+  const rem = remaining();
+  if(rem >= target){
+    el.innerHTML = `<span style="color:var(--success);font-weight:700">✓ you can afford it right now!</span> ₹${Math.round(rem-target).toLocaleString('en-IN')} will remain after.`;
+  } else {
+    const need = target - rem;
+    const dDays = Math.ceil(need / dailyIdeal());
+    el.innerHTML = `need ₹${Math.round(need).toLocaleString('en-IN')} more. <strong>pause spending for ~${dDays} day${dDays>1?'s':''}</strong> to unlock. skip non-essentials → buy guilt-free 🎯`;
+  }
+}
+
+// add entry
+function addEntry(){
+  const amt = parseFloat(document.getElementById('amtIn').value);
+  if(!amt || amt<=0){
+    document.getElementById('amtIn').parentElement.style.borderColor='var(--danger)';
+    setTimeout(()=>document.getElementById('amtIn').parentElement.style.borderColor='',700);
+    showToast('enter a valid amount');
+    return;
+  }
+  const cat = document.getElementById('catIn').value;
+  const note = document.getElementById('noteIn').value.trim();
+  entries.unshift({id:Date.now(), amount:amt, cat, note, day:todayKey(), ts:Date.now()});
+  saveData();
+  document.getElementById('amtIn').value='';
+  document.getElementById('noteIn').value='';
+  showToast(`₹${amt.toLocaleString('en-IN')} added`);
+  // reset view to current month
+  viewYear = new Date().getFullYear();
+  viewMonth = new Date().getMonth();
+  activeFilter = 'all';
+  render();
+}
+
+// delete
+function delEntry(id){
+  entries = entries.filter(e=>e.id!==id);
+  saveData();
+  showToast('entry removed');
+  render();
+}
+
+// toast
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// month nav
+function prevMonth(){
+  viewMonth--;
+  if(viewMonth<0){viewMonth=11;viewYear--;}
+  activeFilter='all';
+  renderHistory();
+}
+function nextMonth(){
+  const now = new Date();
+  if(viewYear===now.getFullYear() && viewMonth===now.getMonth()) return;
+  viewMonth++;
+  if(viewMonth>11){viewMonth=0;viewYear++;}
+  activeFilter='all';
+  renderHistory();
+}
+
+// filter + history
+function renderHistory(){
+  document.getElementById('monthLabel').textContent = getMonthName(viewYear, viewMonth);
+  const monthEntries = entries.filter(e=>{
+    const d=new Date(e.ts);
+    return d.getFullYear()===viewYear && d.getMonth()===viewMonth;
+  });
+  const filtered = activeFilter==='all' ? monthEntries : monthEntries.filter(e=>e.cat===activeFilter);
+  document.getElementById('entryCount').textContent = `${filtered.length} entries`;
+
+  // filter chips
+  const cats = ['all', ...Object.keys(CAT).filter(k=>monthEntries.some(e=>e.cat===k))];
+  document.getElementById('filterRow').innerHTML = cats.map(k=>`
+    <button class="filter-chip ${activeFilter===k?'active':''}" onclick="setFilter('${k}')">
+      ${k==='all'?'All':CAT[k].icon+' '+CAT[k].label}
+    </button>
+  `).join('');
+
+  if(filtered.length===0){
+    document.getElementById('entryList').innerHTML=`
+      <div class="empty">
+        <div class="empty-icon">${activeFilter==='all'?'🌿':'🔍'}</div>
+        <div class="empty-text">${activeFilter==='all'?'No expenses this month yet.<br>Clean slate!':'No entries in this category.'}</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('entryList').innerHTML = filtered.map(e=>{
+    const c = CAT[e.cat]||CAT.misc;
+    const d = new Date(e.ts);
+    const dl = `${d.getDate()} ${d.toLocaleString('default',{month:'short'})} · ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+    return `<div class="entry" id="e${e.id}">
+      <div class="e-icon" style="background:${c.color}22">${c.icon}</div>
+      <div class="e-info">
+        <div class="e-top">
+          <span class="e-name">${c.label}</span>
+          <span class="e-amt">-₹${e.amount.toLocaleString('en-IN')}</span>
+        </div>
+        <div class="e-meta">${e.note||'no note'} · ${dl}</div>
+      </div>
+      <button class="del" onclick="delEntry(${e.id})" aria-label="delete">×</button>
+    </div>`;
+  }).join('');
+}
+
+function setFilter(k){ activeFilter=k; renderHistory(); }
+
+function render(){
+  renderHero();
+  renderStats();
+  renderSaveBar();
+  renderHistory();
+}
+
+// init
+loadData();
+if(dark === null || dark === undefined){
+  dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+applyDark();
+render();
+</script>
+</body>
+</html>
